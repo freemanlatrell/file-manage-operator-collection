@@ -1,0 +1,31 @@
+---
+- name: Create a File instance
+  hosts: all
+  gather_facts: false
+
+  vars_files:
+    - vars/defaults.yml
+
+  tasks:
+    - name: Create a default files_dir directory
+      ansible.builtin.file:
+        path: "{{ files_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Touch a file in the files_dir directory
+      ansible.builtin.file:
+        path: "{{ files_dir }}/{{ filename }}"
+        state: touch
+        mode: '0644'
+
+    - name: Update Custom Resource Status with file location
+      operator_sdk.util.k8s_status:
+        api_version: "{{ k8s_cr_version }}"
+        kind: "{{ k8s_cr_kind }}"
+        name: "{{ ansible_operator_meta.name }}"
+        namespace: "{{ ansible_operator_meta.namespace }}"
+        status:
+          file_location: "{{ files_dir }}/{{ filename }}"
+      when: k8s_managed is defined
+      delegate_to: localhost

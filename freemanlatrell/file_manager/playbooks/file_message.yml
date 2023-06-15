@@ -1,0 +1,52 @@
+---
+- name: Append some information to an existing File instance
+  hosts: all
+  gather_facts: true
+
+  vars_files:
+    - vars/defaults.yml
+
+  tasks:
+    - name: Get an existing File object
+      kubernetes.core.k8s_info:
+        api_version: "{{ k8s_cr_version }}"
+        kind: File
+        name: "{{ file_cr_name }}"
+        namespace: "{{ ansible_operator_meta.namespace }}"
+      register: file_instance
+      when: k8s_managed
+      delegate_to: localhost
+
+    - name: Get an existing FileMessage object
+      kubernetes.core.k8s_info:
+        api_version: "{{ k8s_cr_version }}"
+        kind: "{{ k8s_cr_kind }}"
+        name: "{{ ansible_operator_meta.name }}"
+        namespace: "{{ ansible_operator_meta.namespace }}"
+      register: filemessage_instance
+      when: k8s_managed
+      delegate_to: localhost
+
+    - name: Set reconcile fact
+      ansible.builtin.set_fact:
+        reconcile: '{{ true if ((k8s_cr_event == "create" and filemessage_instance.resources[0].status.skipReconcile is not defined) or k8s_cr_event != "create") else false }}'
+
+    - name: Append to existing file instance
+      ansible.builtin.shell: 'echo "{{ ansible_date_time.iso8601 }} - {{ msg }}" >> {{ files_dir }}/{{ file_instance.resources[0].spec.filename }}'
+      when: |
+        reconcile and
+        file_instance.resources is defined and
+        file_instance.resources | length > 0
+      register: output
+      changed_when: output.rc != 0
+
+    - name: Update Custom Resource Status with to set skipReconcile flag
+      operator_sdk.util.k8s_status:
+        api_version: "{{ k8s_cr_version }}"
+        kind: "{{ k8s_cr_kind }}"
+        name: "{{ ansible_operator_meta.name }}"
+        namespace: "{{ ansible_operator_meta.namespace }}"
+        status:
+          skipReconcile: true
+      when: k8s_managed and reconcile
+      delegate_to: localhost

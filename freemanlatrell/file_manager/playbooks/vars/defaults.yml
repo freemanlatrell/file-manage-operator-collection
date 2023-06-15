@@ -1,0 +1,7 @@
+files_dir: /tmp/zoscb/files
+tmp_dir: "/tmp/Files"
+file_cr_template: file.yaml.j2
+
+# User supplied variables
+filename: test_file.txt
+msg: This is a test
