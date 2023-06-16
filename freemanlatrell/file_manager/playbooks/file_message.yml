@@ -27,6 +27,7 @@
       when: k8s_managed
       delegate_to: localhost
 
+    # yamllint disable rule:line-length
     - name: Set reconcile fact
       ansible.builtin.set_fact:
         reconcile: '{{ true if ((k8s_cr_event == "create" and filemessage_instance.resources[0].status.skipReconcile is not defined) or k8s_cr_event != "create") else false }}'
