@@ -5,6 +5,9 @@ on:
     tags:
       - "**"
 
+permissions:
+  contents: write
+
 jobs:
   release:
     name: Release
@@ -51,23 +54,28 @@ jobs:
           echo "COLLECTION_BUILD=$(ls ${GITHUB_WORKSPACE} | grep file_manager)" >> $GITHUB_ENV
           echo "COLLECTION_BUILD_LOCATION=${GITHUB_WORKSPACE}/$(ls ${GITHUB_WORKSPACE} | grep file_manager)" >> $GITHUB_ENV
 
+      # - name: Upload Asset
+      #   uses: actions/github-script@v6
+      #   with:
+      #     github-token: "${{ secrets.GITHUB_TOKEN }}"
+      #     script: |
+      #       try {
+      #         const assetLocation = '@' + process.env.COLLECTION_BUILD_LOCATION
+      #         const response = await github.rest.repos.uploadReleaseAsset({
+      #           owner: context.repo.owner,
+      #           repo: context.repo.repo,
+      #           release_id: process.env.RELEASE_ID,
+      #           data: assetLocation,
+      #           name: process.env.COLLECTION_BUILD,
+      #         });
+      #       } catch (error) {
+      #         core.setFailed(error.message);
+      #       }
       - name: Upload Asset
-        uses: actions/github-script@v6
-        with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
-          script: |
-            try {
-              const assetLocation = '@' + process.env.COLLECTION_BUILD_LOCATION
-              const response = await github.rest.repos.uploadReleaseAsset({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                release_id: process.env.RELEASE_ID,
-                data: assetLocation,
-                name: process.env.COLLECTION_BUILD,
-              });
-            } catch (error) {
-              core.setFailed(error.message);
-            }
+        run: |
+          gh release upload ${RELEASE_TAG} ${COLLECTION_BUILD_LOCATION}
+        env:
+          GITHUB_TOKEN: ${{ github.TOKEN }}
   publish:
       name: Publish
       needs: release
