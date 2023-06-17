@@ -41,7 +41,7 @@
       register: output
       changed_when: output.rc != 0
 
-    - name: Update Custom Resource Status with to set skipReconcile flag
+    - name: Update Custom Resource Status to set skipReconcile flag
       operator_sdk.util.k8s_status:
         api_version: "{{ k8s_cr_version }}"
         kind: "{{ k8s_cr_kind }}"

@@ -5,13 +5,13 @@ displayName: File Manager
 description: >-
   # File Manager
 
-  The `file-manager` operator allows the creation, deletion, and discovery of files on a host.
+  The `file-manager` operator allows for the creation, deletion, and discovery of files on a host.
 resources:
   - kind: DiscoverFiles
-    description: Discover existing Files
+    description: Discover existing Files on the host
     playbook: playbooks/discover.yml
   - kind: File
-    description: Create a File
+    description: Create a File on the host
     playbook: playbooks/create_file.yml
     finalizer: playbooks/delete_file.yml
     vars:
