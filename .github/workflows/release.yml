@@ -49,6 +49,7 @@ jobs:
         run: |
           ansible-galaxy collection build ${GITHUB_WORKSPACE}/freemanlatrell/file_manager -f --output-path ${GITHUB_WORKSPACE}
           echo "COLLECTION_BUILD=$(ls ${GITHUB_WORKSPACE} | grep file_manager)" >> $GITHUB_ENV
+          echo "COLLECTION_BUILD_LOCATION=${GITHUB_WORKSPACE}/$(ls ${GITHUB_WORKSPACE} | grep file_manager)" >> $GITHUB_ENV
 
       - name: Upload Asset
         uses: actions/github-script@v6
@@ -56,7 +57,7 @@ jobs:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
           script: |
             try {
-              const assetLocation = '@' + process.env.COLLECTION_BUILD
+              const assetLocation = '@' + process.env.COLLECTION_BUILD_LOCATION
               const response = await github.rest.repos.uploadReleaseAsset({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
