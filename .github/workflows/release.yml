@@ -65,14 +65,13 @@ jobs:
 
         - name: Sign Collection
           run: |
-            echo "$PRIVATE_KEY" > privatekey.pem
+            openssl genrsa -out privatekey.pem 2048
             openssl rsa -in privatekey.pem -out file-manager.pub -outform PEM -pubout
             openssl dgst -sha256 -sign privatekey.pem -out file-manager-${RELEASE}.sig ${COLLECTION_BUILD}
             openssl dgst -sha256 -verify file-manager.pub -signature file-manager-${RELEASE}.sig ${COLLECTION_BUILD}
             echo "PUBLIC_KEY=$(readlink -f file-manager.pub)" >> $GITHUB_ENV
             echo "SIGNATURE=$(readlink -f file-manager-${RELEASE}.sig)" >> $GITHUB_ENV
           env:
-            PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
             RELEASE:  ${{ env.RELEASE_TAG }}
 
         - name: Upload Collection and Signature Files to GitHub
