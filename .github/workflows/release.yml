@@ -39,43 +39,6 @@ jobs:
               core.setFailed(error.message);
             }
 
-      - name: Check-out repository
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          ref: ${{ env.RELEASE_TAG }}
-
-      - name: Install Ansible
-        run: pip install ansible
-
-      - name: Build Collection
-        run: |
-          ansible-galaxy collection build ${GITHUB_WORKSPACE}/freemanlatrell/file_manager -f --output-path ${GITHUB_WORKSPACE}
-          echo "COLLECTION_BUILD=$(ls ${GITHUB_WORKSPACE} | grep file_manager)" >> $GITHUB_ENV
-          echo "COLLECTION_BUILD_LOCATION=${GITHUB_WORKSPACE}/$(ls ${GITHUB_WORKSPACE} | grep file_manager)" >> $GITHUB_ENV
-
-      # - name: Upload Asset
-      #   uses: actions/github-script@v6
-      #   with:
-      #     github-token: "${{ secrets.GITHUB_TOKEN }}"
-      #     script: |
-      #       try {
-      #         const assetLocation = '@' + process.env.COLLECTION_BUILD_LOCATION
-      #         const response = await github.rest.repos.uploadReleaseAsset({
-      #           owner: context.repo.owner,
-      #           repo: context.repo.repo,
-      #           release_id: process.env.RELEASE_ID,
-      #           data: assetLocation,
-      #           name: process.env.COLLECTION_BUILD,
-      #         });
-      #       } catch (error) {
-      #         core.setFailed(error.message);
-      #       }
-      - name: Upload Asset
-        run: |
-          gh release upload ${RELEASE_TAG} ${COLLECTION_BUILD_LOCATION}
-        env:
-          GITHUB_TOKEN: ${{ github.TOKEN }}
   publish:
       name: Publish
       needs: release
@@ -91,19 +54,14 @@ jobs:
             fetch-depth: 0
             ref: ${{ env.RELEASE_TAG }}
 
-        - name: Install Python Requirements
-          uses: actions/setup-python@v4
-          with:
-            python-version: '3.10'
-            cache: 'pip'
-
         - name: Install Ansible
           run: pip install ansible
 
         - name: Build Collection
           run: |
             ansible-galaxy collection build ${GITHUB_WORKSPACE}/freemanlatrell/file_manager -f --output-path ${GITHUB_WORKSPACE}/freemanlatrell/file_manager/local/builds
-            echo "COLLECTION_BUILD=$(ls ${GITHUB_WORKSPACE}/freemanlatrell/file_manager/local/builds)" >> $GITHUB_ENV
+            echo "COLLECTION_BUILD=$(ls ${GITHUB_WORKSPACE} | grep file_manager)" >> $GITHUB_ENV
+            echo "COLLECTION_BUILD_LOCATION=${GITHUB_WORKSPACE}/$(ls ${GITHUB_WORKSPACE} | grep file_manager)" >> $GITHUB_ENV
 
         - name: Sign Collection
           run: |
@@ -117,34 +75,16 @@ jobs:
             PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
             RELEASE:  ${{ env.RELEASE_TAG }}
 
-        - name: Upload Signature Files
-          uses: actions/github-script@v6
-          with:
-            github-token: "${{ secrets.GITHUB_TOKEN }}"
-            script: |
-              try {
-                const publicKeyLocation = '@' + process.env.PUBLIC_KEY
-                const response = await github.rest.repos.uploadReleaseAsset({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  release_id: process.env.RELEASE_ID,
-                  data: publicKeyLocation,
-                  name: file-manager.pub,
-                });
-                const signatureLocation = '@' + process.env.SIGNATURE
-                const response = await github.rest.repos.uploadReleaseAsset({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  release_id: process.env.RELEASE_ID,
-                  data: signatureLocation,
-                  name: file-manager-${RELEASE}.sig,
-                });
-              } catch (error) {
-                core.setFailed(error.message);
-              }
+        - name: Upload Collection and Signature Files to GitHub
+          run: |
+            gh release upload ${RELEASE_TAG} ${COLLECTION_BUILD_LOCATION}
+            gh release upload ${RELEASE_TAG} ${PUBLIC_KEY}
+            gh release upload ${RELEASE_TAG} ${SIGNATURE}
+          env:
+            GITHUB_TOKEN: ${{ github.TOKEN }}
 
         - name: Publish Collection to Ansible Galaxy
-          run: ansible-galaxy collection publish -c -s '${GALAXY_URL}' --token='${GALAXY_API_KEY}' '${COLLECTION_BUILD}'
+          run: ansible-galaxy collection publish -c -s '${GALAXY_URL}' --token='${GALAXY_API_KEY}' '${COLLECTION_BUILD_LOCATION}'
           env:
             GALAXY_URL: ${{ secrets.GALAXY_URL }}
             GALAXY_API_KEY: ${{ secrets.GALAXY_API_KEY }}
