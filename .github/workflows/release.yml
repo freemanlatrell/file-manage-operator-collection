@@ -61,7 +61,7 @@ jobs:
           run: |
             ansible-galaxy collection build ${GITHUB_WORKSPACE}/freemanlatrell/file_manager -f --output-path ${GITHUB_WORKSPACE}/freemanlatrell/file_manager/local/builds
             echo "COLLECTION_BUILD=$(ls ${GITHUB_WORKSPACE}/freemanlatrell/file_manager/local/builds)" >> $GITHUB_ENV
-            echo "COLLECTION_BUILD_LOCATION=${GITHUB_WORKSPACE}/$(ls ${GITHUB_WORKSPACE}/freemanlatrell/file_manager/local/builds)" >> $GITHUB_ENV
+            echo "COLLECTION_BUILD_LOCATION=${GITHUB_WORKSPACE}/freemanlatrell/file_manager/local/builds/$(ls ${GITHUB_WORKSPACE}/freemanlatrell/file_manager/local/builds)" >> $GITHUB_ENV
 
         - name: Sign Collection
           run: |
