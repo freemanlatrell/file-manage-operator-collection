@@ -83,8 +83,7 @@ jobs:
             GITHUB_TOKEN: ${{ github.TOKEN }}
 
         - name: Publish Collection to Ansible Galaxy
-          run: ansible-galaxy collection publish -c -s '${GALAXY_URL}' --token='${GALAXY_API_KEY}' '${COLLECTION_BUILD_LOCATION}'
+          run: ansible-galaxy collection publish --token='${GALAXY_API_KEY}' '${COLLECTION_BUILD_LOCATION}'
           env:
-            GALAXY_URL: ${{ secrets.GALAXY_URL }}
             GALAXY_API_KEY: ${{ secrets.GALAXY_API_KEY }}
 
