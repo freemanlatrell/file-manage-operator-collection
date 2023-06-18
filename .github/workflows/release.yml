@@ -55,7 +55,7 @@ jobs:
             ref: ${{ env.RELEASE_TAG }}
 
         - name: Install Ansible
-          run: pip install ansible==7.5.0
+          run: pip install ansible==8.0.0
 
         - name: Build Collection
           run: |
@@ -83,7 +83,7 @@ jobs:
             GITHUB_TOKEN: ${{ github.TOKEN }}
 
         - name: Publish Collection to Ansible Galaxy
-          run: ansible-galaxy collection publish -vvvv --token='${GALAXY_API_KEY}' '${COLLECTION_BUILD_LOCATION}'
+          run: ansible-galaxy collection publish -vvvv --api-key '${GALAXY_API_KEY}' '${COLLECTION_BUILD_LOCATION}'
           env:
             GALAXY_API_KEY: ${{ secrets.GALAXY_API_KEY }}
 
