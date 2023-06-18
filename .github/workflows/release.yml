@@ -55,7 +55,7 @@ jobs:
             ref: ${{ env.RELEASE_TAG }}
 
         - name: Install Ansible
-          run: pip install ansible==2.14
+          run: pip install ansible==7.5.0
 
         - name: Build Collection
           run: |
