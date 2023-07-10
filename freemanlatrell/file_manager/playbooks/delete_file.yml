@@ -1,13 +1,11 @@
----
-- name: Delete a File instance
+- name: Delete a File
   hosts: all
-  # connection: local
   gather_facts: false
   vars_files:
-    - vars/defaults.yml
+    - vars/my_vars.yml
 
   tasks:
-    - name: Delete a file instance
+    - name: Delete the file in the /u/ibmuser/files directory
       ansible.builtin.file:
+        path: /u/ibmuser/files/{{ filename }}
         state: absent
-        path: "{{ files_dir }}/{{ filename }}"

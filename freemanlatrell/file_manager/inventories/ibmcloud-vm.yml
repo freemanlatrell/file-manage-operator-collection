@@ -1,6 +1,0 @@
-all:
-  hosts:
-    ibmcloud-vm:
-      ansible_host: 52.117.98.131
-      ansible_port: 22
-      ansible_user: ldfreema
